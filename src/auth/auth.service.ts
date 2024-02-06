@@ -9,29 +9,27 @@ import { UpdateAuthDto } from './dto/update-auth.dto';
 import { User } from './entities/user.entity';
 import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload';
+import { LoginResponse } from './interfaces/login-response';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @InjectModel(User.name)
     private userModel: Model<User>,
     private jwtService: JwtService,
-
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {   
-    
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       // Crear objeto con la contraseña y demás datos del usuario
-      const {password, ...userData} = createUserDto;
-      
+      const { password, ...userData } = createUserDto;
+
       // Encriptar la contraseña
       const newUser = new this.userModel({
         password: bcryptjs.hashSync(password, 10),
-        ...userData
+        ...userData,
       });
-      
+
       // Guardar el usuario en BBDD
       await newUser.save();
 
@@ -39,31 +37,39 @@ export class AuthService {
       const { password: _, ...user } = newUser.toJSON();
       return user;
     } catch (error) {
-      if (error.code = 11000) {
-        throw new BadRequestException(`${createUserDto.email} already exists!`)
+      if ((error.code = 11000)) {
+        throw new BadRequestException(`${createUserDto.email} already exists!`);
       }
-      throw new InternalServerErrorException('Something terrible happened!')
+      throw new InternalServerErrorException('Something terrible happened!');
     }
-
   }
 
-  async login(loginDto: LoginDto) {
-    const {email, password} = loginDto;
+  // async register(): Promise<LoginResponse> {
+  //   // registro de usuario. llamar al método -> create
 
-    const user = await this.userModel.findOne({email});
-    if ( !user ) {
+  //   return {
+  //     user: user,
+  //     token: 'ABC',
+  //   };
+  // }
+
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
+    const { email, password } = loginDto;
+
+    const user = await this.userModel.findOne({ email });
+    if (!user) {
       throw new UnauthorizedException('Not valid credentials - email');
     }
-    if ( !bcryptjs.compareSync(password, user.password) ) {
+    if (!bcryptjs.compareSync(password, user.password)) {
       throw new UnauthorizedException('Not valid credentials - password');
     }
 
-    const { password: _, ...userData} = user.toJSON();
+    const { password: _, ...userData } = user.toJSON();
 
     return {
       user: userData,
       token: this.getJwt({ id: user.id }),
-    }
+    };
   }
 
   findAll() {
@@ -82,7 +88,7 @@ export class AuthService {
     return `This action removes a #${id} auth`;
   }
 
-  getJwt( payload: JwtPayload ) {
+  getJwt(payload: JwtPayload) {
     const token = this.jwtService.sign(payload);
     return token;
   }

@@ -16,11 +16,12 @@ export class AuthController {
   @Post('/login')
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
-    /**
-     * User {_id, name, email, roles}
-     * Token -> JWT
-     */
   }
+
+  // @Post('/register')
+  // register(@Body() registerDto: RegisterDto) {
+  //   return this.authService.register(registerDto);
+  // }
 
   @Get()
   findAll() {
