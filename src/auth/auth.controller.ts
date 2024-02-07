@@ -32,11 +32,9 @@ export class AuthController {
     return this.authService.findAll();
   }
 
-  // recibir JWT en ruta 'check-token'
-  // devolver una instancia de LoginResponse
   @UseGuards(AuthGuard)
   @Get('/check-token')
-  checkToken(@Request() request: Request): LoginResponse { // : Promise<LoginResponse>
+  checkToken(@Request() request: Request): LoginResponse {
     const user = request['user'] as User;
 
     return {
