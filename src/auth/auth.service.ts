@@ -4,10 +4,9 @@ import { Model } from 'mongoose';
 import * as bcryptjs from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { CreateUserDto, UpdateAuthDto, LoginDto, RegisterDto } from './dto/';
+
 import { User } from './entities/user.entity';
-import { LoginDto } from './dto/login.dto';
 import { JwtPayload } from './interfaces/jwt-payload';
 import { LoginResponse } from './interfaces/login-response';
 
@@ -44,14 +43,15 @@ export class AuthService {
     }
   }
 
-  // async register(): Promise<LoginResponse> {
-  //   // registro de usuario. llamar al método -> create
+  async register(registerDto: RegisterDto): Promise<LoginResponse> {
+    const user = await this.create(registerDto);
+    console.log(user);
 
-  //   return {
-  //     user: user,
-  //     token: 'ABC',
-  //   };
-  // }
+    return {
+      user: user,
+      token: this.getJwt({id: user._id}),
+    };
+  }
 
   async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
